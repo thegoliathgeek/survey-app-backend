@@ -1,0 +1,67 @@
+service: survey-app-backend
+frameworkVersion: "3"
+
+plugins:
+  - serverless-plugin-typescript
+
+custom:
+  sessionTable: "session-table-${sls:stage}"
+  imageMapperTable: "image-mapper-table-${sls:stage}"
+
+package:
+  individually: true
+  patterns:
+    - "!test.ts" # Ignore test file
+    - "!node_modules/ts-node-dev/**" # Ignore ts-node-dev
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - Fn::GetAtt: [SessionTable, Arn]
+            - Fn::GetAtt: [ImageMapperTable, Arn]
+
+functions:
+  api:
+    environment:
+      SESSION_TABLE: ${self:custom.sessionTable}
+      IMAGE_MAPPER_TABLE: ${self:custom.imageMapperTable}
+    handler: index.handler
+    events:
+      - httpApi: "*"
+
+resources:
+  Resources:
+    SessionTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:custom.sessionTable}
+    ImageMapperTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:custom.imageMapperTable}
