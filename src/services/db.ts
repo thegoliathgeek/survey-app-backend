@@ -57,6 +57,7 @@ export const createImageMapper = async (imageMapper: IImageMapper) => {
       id: { S: uuid4() },
       imageIds: { SS: imageMapper.imageIds },
       sessionId: { S: imageMapper.sessionId },
+      count: { N: imageMapper.imageIds.length.toString() },
       createdAt: { S: now },
       updatedAt: { S: now },
     },
@@ -88,6 +89,23 @@ export const verifySessionIsValid = async (sessionId: string) => {
       return true;
     }
     return false;
+  } catch (error) {
+    console.log(error);
+    return undefined;
+  }
+};
+
+export const listImageMappers = async (sessionId: string) => {
+  const params = {
+    TableName: process.env.IMAGE_MAPPER_TABLE as string,
+    Key: {
+      id: { S: sessionId },
+    },
+  };
+
+  try {
+    const imageMappers = await dbClient.send(new GetItemCommand(params));
+    return imageMappers;
   } catch (error) {
     console.log(error);
     return undefined;

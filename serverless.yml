@@ -36,6 +36,7 @@ functions:
   api:
     environment:
       SESSION_TABLE: ${self:custom.sessionTable}
+      S3_BUCKET_URL: https://imagesset.s3.ap-south-1.amazonaws.com/
       IMAGE_MAPPER_TABLE: ${self:custom.imageMapperTable}
     handler: index.handler
     events:
