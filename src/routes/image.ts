@@ -2,7 +2,7 @@ import { Request, Response, Router } from "express";
 import imageFiles from "../data/filePaths.json";
 import { createImageMapper, verifySessionIsValid } from "../services/db";
 import { getSurveyJson } from "../services/survey";
-
+import {synonyms, antonyms} from "../data/filePathModified";
 const imageRouter = Router();
 
 imageRouter.get("/", (_req, res) => {
@@ -20,6 +20,21 @@ imageRouter.get("/map", async (req: Request, res: Response) => {
         message: "Invalid Session",
       });
     }
+
+
+  // get 250 synonyms and antonyms urls each per survey
+  // 1182 synonym urls 1182 / 250 = 4 cycles
+  // 707 antonym urls 707 / 250 = 3 cycles
+
+  // get the session number from session list query
+  const synonymSessionNumber = 1;
+  const antonymSessionNumber = 1;
+  const synonymSliceStart = (synonymSessionNumber - 1)*10;
+  const synonymSliceEnd = synonymSliceStart + 250 > 1182 ? 1182 : synonymSliceStart + 250;
+  const antonymSliceStart = (antonymSessionNumber - 1)*10;
+  const antonymSliceEnd = antonymSliceStart + 250 > 707 ? 707 : antonymSliceStart + 250;
+  const synonymsUrls = synonyms.slice(synonymSliceStart, synonymSliceEnd).length < 250 ? synonyms.slice(synonymSliceStart, synonymSliceEnd).concat(synonyms.slice(0, 250 - synonyms.slice(synonymSliceStart, synonymSliceEnd).length)) : synonyms.slice(synonymSliceStart, synonymSliceEnd);
+  const antonymUrls = antonyms.slice(antonymSliceStart, antonymSliceEnd).length < 250 ? antonyms.slice(antonymSliceStart, antonymSliceEnd).concat(antonyms.slice(0, 250 - antonyms.slice(antonymSliceStart, antonymSliceEnd).length)) : antonyms.slice(antonymSliceStart, antonymSliceEnd);
 
     const images = imageFiles.slice(0, Number(count));
 
