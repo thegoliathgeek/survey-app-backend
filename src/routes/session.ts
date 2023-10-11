@@ -18,7 +18,10 @@ router.post("/new/session", async (_req: Request, res: Response) => {
       ttl: Math.floor(Date.now() / 1000) + 60 * 60,
     });
     return res.status(200).json({
-      session,
+      session: {
+        ...session,
+        ttl: Math.floor(Date.now() / 1000) + 60 * 60,
+      },
     });
   } catch (error: any) {
     return res.status(500).json({

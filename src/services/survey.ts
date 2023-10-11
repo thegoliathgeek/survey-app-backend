@@ -15,8 +15,6 @@ export const getSurveyJson = (imageUrls: string[]) => {
     pages: [
       {
         name: "page1",
-        maxImageWidth: 200,
-        maxImageHeight: 133,
         elements: [
           {
             type: "imagepicker",
