@@ -7,28 +7,65 @@ const parseImageUrl = (url: string) => {
   };
 };
 
+export type SurveyJson = {
+  name: string;
+  elements: {
+    type: string;
+    name: string;
+    title: string;
+    description: string;
+    isRequired: boolean;
+    choices: {
+      name: string;
+      imageLink: string;
+      value: string;
+    }[];
+    showLabel: boolean;
+    multiSelect: boolean;
+    fullWidth: boolean;
+  }[];
+  maxImageWidth?: number;
+  maxImageHeight?: number;
+}[];
+
 export const getSurveyJson = (imageUrls: string[]) => {
+  // get title , description and name from db
+
+  // loop to create 25 pages for given data
+
+  let questionPages: SurveyJson = [];
+  let imageIndex = 0;
+
+  for (let i = 0; i < 25; i++) {
+    questionPages.push({
+      name: `page${i}`,
+      elements: [
+        {
+          type: "imagepicker",
+          name: `animals${i}`,
+          title: "Which animals would you like to see in real life?",
+          description: "Please select all that apply.",
+          isRequired: true,
+          choices: imageUrls
+            .slice(imageIndex, imageIndex + 25)
+            .map((url) => parseImageUrl(url)),
+          showLabel: true,
+          multiSelect: true,
+          fullWidth: true,
+        },
+      ],
+    });
+
+    imageIndex += 25;
+  }
+
   return {
     title: "Survery App",
     logoPosition: "left",
+    showQuestionNumbers: "onpage",
     focusFirstQuestionAutomatic: false,
     pages: [
-      {
-        name: "page1",
-        elements: [
-          {
-            type: "imagepicker",
-            name: "animals",
-            title: "Which animals would you like to see in real life?",
-            description: "Please select all that apply.",
-            isRequired: true,
-            choices: imageUrls.map((url) => parseImageUrl(url)),
-            showLabel: true,
-            multiSelect: true,
-            fullWidth: true,
-          },
-        ],
-      },
+      ...questionPages,
       {
         name: "page2",
         elements: [
@@ -51,6 +88,5 @@ export const getSurveyJson = (imageUrls: string[]) => {
         ],
       },
     ],
-    showQuestionNumbers: "off",
   };
 };
