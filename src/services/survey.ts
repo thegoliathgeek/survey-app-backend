@@ -28,7 +28,7 @@ export type SurveyJson = {
   maxImageHeight?: number;
 }[];
 
-export const getSurveyJson = (imageUrls: string[]) => {
+export const getSurveyJson = (imageUrls: string[], pagesCount = 25) => {
   // get title , description and name from db
 
   // loop to create 25 pages for given data
@@ -36,7 +36,7 @@ export const getSurveyJson = (imageUrls: string[]) => {
   let questionPages: SurveyJson = [];
   let imageIndex = 0;
 
-  for (let i = 0; i < 25; i++) {
+  for (let i = 0; i < pagesCount; i++) {
     questionPages.push({
       name: `page${i}`,
       elements: [
@@ -47,7 +47,7 @@ export const getSurveyJson = (imageUrls: string[]) => {
           description: "Please select all that apply.",
           isRequired: true,
           choices: imageUrls
-            .slice(imageIndex, imageIndex + 25)
+            .slice(imageIndex, imageIndex + 24)
             .map((url) => parseImageUrl(url)),
           showLabel: true,
           multiSelect: true,
@@ -56,13 +56,17 @@ export const getSurveyJson = (imageUrls: string[]) => {
       ],
     });
 
-    imageIndex += 25;
+    if (imageIndex + 24 > imageUrls.length) {
+      imageIndex = 0;
+    } else {
+      imageIndex += 24;
+    }
   }
 
   return {
     title: "Survery App",
     logoPosition: "left",
-    showQuestionNumbers: "onpage",
+    showProgressBar: "bottom",
     focusFirstQuestionAutomatic: false,
     pages: [
       ...questionPages,

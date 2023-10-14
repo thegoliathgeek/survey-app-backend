@@ -12,6 +12,7 @@ imageRouter.get("/", (_req, res) => {
 imageRouter.get("/map", async (req: Request, res: Response) => {
   const sessionId = req.headers["session-id"];
   const count = req.query.count;
+  const pageCount = req.query?.pageCount ? Number(req.query.pageCount) : 25;
   try {
     const isValidSession = await verifySessionIsValid(sessionId as string);
 
@@ -73,7 +74,9 @@ imageRouter.get("/map", async (req: Request, res: Response) => {
       (image) => process.env.S3_BUCKET_URL + image
     );
 
-    const surveyJson = getSurveyJson(appendBucketUrls);
+    console.log("Lenght of appendBucketUrls", appendBucketUrls.length);
+
+    const surveyJson = getSurveyJson(appendBucketUrls, pageCount);
 
     return res.status(200).json(surveyJson);
   } catch (error: any) {
