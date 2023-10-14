@@ -1,3 +1,5 @@
+import questions from "../data/questions.json";
+
 const parseImageUrl = (url: string) => {
   const splitUrl = url.split("/");
   return {
@@ -42,8 +44,8 @@ export const getSurveyJson = (imageUrls: string[], pagesCount = 25) => {
       elements: [
         {
           type: "imagepicker",
-          name: `animals${i}`,
-          title: "Which animals would you like to see in real life?",
+          name: `page${i + 1}`,
+          title: questions[i],
           description: "Please select all that apply.",
           isRequired: true,
           choices: imageUrls
@@ -71,7 +73,7 @@ export const getSurveyJson = (imageUrls: string[], pagesCount = 25) => {
     pages: [
       ...questionPages,
       {
-        name: "page2",
+        name: "pageend",
         elements: [
           {
             type: "rating",
