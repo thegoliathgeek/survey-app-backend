@@ -708,7 +708,7 @@ export const antonyms = [
   "survey-photos/antonyms/simple/simple_99.jpg",
 ];
 export const synonyms = [
-  "survey-photos/synonyms/attractive_11.jpg",
+  "survey-photos/synonyms/attractive/attractive_11.jpg",
   "survey-photos/synonyms/attractive/attractive_0.jpg",
   "survey-photos/synonyms/attractive/attractive_1.jpg",
   "survey-photos/synonyms/attractive/attractive_10.jpg",
