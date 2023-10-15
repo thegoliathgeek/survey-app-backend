@@ -822,7 +822,7 @@ export const synonyms = ["survey-photos/synonyms/chic/chic_50.jpg",
 "survey-photos/synonyms/elegant/elegant_75.jpg",
 "survey-photos/synonyms/chic/chic_24.jpg",
 "survey-photos/synonyms/elegant/elegant_35.jpg",
-"survey-photos/synonyms/.DS_Store",
+
 "survey-photos/synonyms/elegant/elegant_61.jpg",
 "survey-photos/synonyms/colorful/colorful_33.jpg",
 "survey-photos/synonyms/chic/chic_80.jpg",

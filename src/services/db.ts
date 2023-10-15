@@ -1,10 +1,12 @@
 import {
   DynamoDBClient,
   GetItemCommand,
+  GetItemCommandInput,
   PutItemCommand,
+
   PutItemInput,
 } from "@aws-sdk/client-dynamodb";
-import { UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { UpdateCommand,ScanCommand, GetCommand, GetCommandInput  } from "@aws-sdk/lib-dynamodb";
 
 import { v4 as uuid4 } from "uuid";
 
@@ -20,6 +22,7 @@ interface ISession extends ITableName {
   id?: string;
   sessionData: string;
   ttl: number;
+  index?: number;
 }
 
 interface IImageMapper extends ITableName {
@@ -36,6 +39,7 @@ export const createSession = async (session: ISession) => {
       id: { S: sessionId },
       sessionData: { S: session.sessionData },
       ttl: { N: session.ttl.toString() },
+      index: { N: (session.index ?? 1).toString()},
       createdAt: { S: now },
       updatedAt: { S: now },
     },
@@ -93,6 +97,9 @@ export const createImageMapper = async (imageMapper: IImageMapper) => {
     },
   };
 
+
+  
+
   try {
     await dbClient.send(new PutItemCommand(params));
     return true;
@@ -101,6 +108,55 @@ export const createImageMapper = async (imageMapper: IImageMapper) => {
     return false;
   }
 };
+
+export const listSessions = async () => {
+  const scanCmd = new ScanCommand({
+    TableName: process.env.SESSION_TABLE,
+  });
+
+  try {
+    const response = await dbClient.send(scanCmd);
+    console.log(response);
+    return response.Items;
+  } catch (err) {
+    console.error(err);
+    return undefined;
+  }
+};
+
+export const listLatestSessions = async () => {
+  const scanCmd = new ScanCommand({
+    TableName: process.env.SESSION_TABLE,
+    Limit: 3,
+  });
+
+  try {
+    const response = await dbClient.send(scanCmd);
+    console.log(response);
+    return response.Items;
+  } catch (err) {
+    console.error(err);
+    return undefined;
+  }
+};
+
+export const getSession = async (sessionId: string) => {
+  console.log("testing sessionId", sessionId);
+  const params: GetItemCommandInput = {
+    TableName: process.env.SESSION_TABLE as string,
+    Key: {
+      id: { S: sessionId },
+    },
+  };
+
+  try {
+    const session = await dbClient.send(new GetItemCommand(params));
+    return session ;
+  } catch (error) {
+    console.log('error in getting ' ,error);
+    return undefined;
+  }
+}
 
 export const verifySessionIsValid = async (sessionId: string) => {
   const params = {
