@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import imageFiles from "../data/filePaths.json";
-import { createImageMapper, verifySessionIsValid } from "../services/db";
+import { createImageMapper, verifySessionIsValid , listSessions, listLatestSessions, getSession} from "../services/db";
 import { getSurveyJson } from "../services/survey";
 import { synonyms, antonyms } from "../data/filePathModified";
 const imageRouter = Router();
@@ -9,7 +9,7 @@ imageRouter.get("/", (_req, res) => {
   return res.status(200).send(`<h1>Welcome to Survey App</h1>`);
 });
 
-imageRouter.get("/map", async (req: Request, res: Response) => {
+imageRouter.get("/getImages", async (req: Request, res: Response) => {
   const sessionId = req.headers["session-id"];
   const count = req.query.count;
   const pageCount = req.query?.pageCount ? Number(req.query.pageCount) : 25;
@@ -22,19 +22,22 @@ imageRouter.get("/map", async (req: Request, res: Response) => {
       });
     }
 
+    const getCurrentSession = await getSession(sessionId as string);
+
+    console.log("getCurrentSession",   getCurrentSession)
+
     // get 250 synonyms and antonyms urls each per survey
     // 1182 synonym urls 1182 / 250 = 4 cycles
     // 707 antonym urls 707 / 250 = 3 cycles
 
     // get the session number from session list query
-    const synonymSessionNumber = 1;
-    const antonymSessionNumber = 1;
+    const sessionNumber =  parseInt(getCurrentSession?.Item?.index.N ?? '1')
 
-    const synonymSliceStart = (synonymSessionNumber - 1) * 10;
+    const synonymSliceStart = (sessionNumber - 1) * 10;
     const synonymSliceEnd =
       synonymSliceStart + 250 > 1182 ? 1182 : synonymSliceStart + 250;
 
-    const antonymSliceStart = (antonymSessionNumber - 1) * 10;
+    const antonymSliceStart = (sessionNumber - 1) * 10;
     const antonymSliceEnd =
       antonymSliceStart + 250 > 707 ? 707 : antonymSliceStart + 250;
 
@@ -73,6 +76,10 @@ imageRouter.get("/map", async (req: Request, res: Response) => {
     const appendBucketUrls = [...synonymsUrls, ...antonymUrls].map(
       (image) => process.env.S3_BUCKET_URL + image
     );
+
+    console.log("appendBucketUrls", appendBucketUrls[0]);
+
+    appendBucketUrls.sort(() => Math.random() - 0.5)
 
     console.log("Lenght of appendBucketUrls", appendBucketUrls.length);
 

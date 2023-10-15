@@ -3,7 +3,7 @@ import questions from "../data/questions.json";
 const parseImageUrl = (url: string) => {
   const splitUrl = url.split("/");
   return {
-    name: splitUrl[splitUrl.length - 1],
+    name: '',
     imageLink: url,
     value: splitUrl[splitUrl.length - 1],
   };
@@ -30,10 +30,10 @@ export type SurveyJson = {
   maxImageHeight?: number;
 }[];
 
-export const getSurveyJson = (imageUrls: string[], pagesCount = 25) => {
+export const getSurveyJson = (imageUrls: string[], pagesCount = 20) => {
   // get title , description and name from db
 
-  // loop to create 25 pages for given data
+  // loop to create 20 pages for given data
 
   let questionPages: SurveyJson = [];
   let imageIndex = 0;
@@ -49,7 +49,7 @@ export const getSurveyJson = (imageUrls: string[], pagesCount = 25) => {
           description: "Please select all that apply.",
           isRequired: true,
           choices: imageUrls
-            .slice(imageIndex, imageIndex + 24)
+            .slice(imageIndex, imageIndex + 25)
             .map((url) => parseImageUrl(url)),
           showLabel: true,
           multiSelect: true,
@@ -58,10 +58,10 @@ export const getSurveyJson = (imageUrls: string[], pagesCount = 25) => {
       ],
     });
 
-    if (imageIndex + 24 > imageUrls.length) {
+    if (imageIndex + 25 > imageUrls.length) {
       imageIndex = 0;
     } else {
-      imageIndex += 24;
+      imageIndex += 25;
     }
   }
 
