@@ -30,10 +30,10 @@ export type SurveyJson = {
   maxImageHeight?: number;
 }[];
 
-export const getSurveyJson = (imageUrls: string[], pagesCount = 25) => {
+export const getSurveyJson = (imageUrls: string[], pagesCount = 20) => {
   // get title , description and name from db
 
-  // loop to create 25 pages for given data
+  // loop to create 20 pages for given data
 
   let questionPages: SurveyJson = [];
   let imageIndex = 0;
