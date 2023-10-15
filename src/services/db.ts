@@ -2,7 +2,10 @@ import {
   DynamoDBClient,
   GetItemCommand,
   PutItemCommand,
+  PutItemInput,
 } from "@aws-sdk/client-dynamodb";
+import { UpdateCommand } from "@aws-sdk/lib-dynamodb";
+
 import { v4 as uuid4 } from "uuid";
 
 const dbClient = new DynamoDBClient({
@@ -14,6 +17,7 @@ interface ITableName {
 }
 
 interface ISession extends ITableName {
+  id?: string;
   sessionData: string;
   ttl: number;
 }
@@ -45,6 +49,32 @@ export const createSession = async (session: ISession) => {
     };
   } catch (error) {
     console.log(error);
+    return undefined;
+  }
+};
+
+export const updateSession = async (session: ISession) => {
+  const updateCmd = new UpdateCommand({
+    TableName: session.tableName,
+    Key: {
+      id: session.id,
+    },
+    UpdateExpression: "SET sessionData = :sessionData, updatedAt = :updatedAt",
+    ExpressionAttributeValues: {
+      ":sessionData": JSON.stringify(
+        session?.sessionData ? session.sessionData : {}
+      ),
+      ":updatedAt": new Date().toISOString(),
+    },
+    ReturnValues: "ALL_NEW",
+  });
+
+  try {
+    const response = await dbClient.send(updateCmd);
+    console.log(response);
+    return response;
+  } catch (err) {
+    console.error(err);
     return undefined;
   }
 };
