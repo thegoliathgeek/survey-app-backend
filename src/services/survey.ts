@@ -1,38 +1,79 @@
+import questions from "../data/questions.json";
+
 const parseImageUrl = (url: string) => {
   const splitUrl = url.split("/");
   return {
-    name: splitUrl[splitUrl.length - 1],
+    name: '',
     imageLink: url,
     value: splitUrl[splitUrl.length - 1],
   };
 };
 
-export const getSurveyJson = (imageUrls: string[]) => {
+export type SurveyJson = {
+  name: string;
+  elements: {
+    type: string;
+    name: string;
+    title: string;
+    description: string;
+    isRequired: boolean;
+    choices: {
+      name: string;
+      imageLink: string;
+      value: string;
+    }[];
+    showLabel: boolean;
+    multiSelect: boolean;
+    fullWidth: boolean;
+  }[];
+  maxImageWidth?: number;
+  maxImageHeight?: number;
+}[];
+
+export const getSurveyJson = (imageUrls: string[], pagesCount = 20) => {
+  // get title , description and name from db
+
+  // loop to create 20 pages for given data
+
+  let questionPages: SurveyJson = [];
+  let imageIndex = 0;
+
+  for (let i = 0; i < pagesCount; i++) {
+    questionPages.push({
+      name: `page${i}`,
+      elements: [
+        {
+          type: "imagepicker",
+          name: `page${i + 1}`,
+          title: questions[i],
+          description: "Please select all that apply.",
+          isRequired: true,
+          choices: imageUrls
+            .slice(imageIndex, imageIndex + 25)
+            .map((url) => parseImageUrl(url)),
+          showLabel: true,
+          multiSelect: true,
+          fullWidth: true,
+        },
+      ],
+    });
+
+    if (imageIndex + 25 > imageUrls.length) {
+      imageIndex = 0;
+    } else {
+      imageIndex += 25;
+    }
+  }
+
   return {
     title: "Survery App",
     logoPosition: "left",
+    showProgressBar: "bottom",
     focusFirstQuestionAutomatic: false,
     pages: [
+      ...questionPages,
       {
-        name: "page1",
-        maxImageWidth: 200,
-        maxImageHeight: 133,
-        elements: [
-          {
-            type: "imagepicker",
-            name: "animals",
-            title: "Which animals would you like to see in real life?",
-            description: "Please select all that apply.",
-            isRequired: true,
-            choices: imageUrls.map((url) => parseImageUrl(url)),
-            showLabel: true,
-            multiSelect: true,
-            fullWidth: true,
-          },
-        ],
-      },
-      {
-        name: "page2",
+        name: "pageend",
         elements: [
           {
             type: "rating",
@@ -53,6 +94,5 @@ export const getSurveyJson = (imageUrls: string[]) => {
         ],
       },
     ],
-    showQuestionNumbers: "off",
   };
 };
