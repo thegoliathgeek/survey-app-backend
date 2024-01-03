@@ -1,9 +1,9 @@
-import questions from "../data/questions.json";
+import { getQuestion } from "../helper/question";
 
 const parseImageUrl = (url: string) => {
   const splitUrl = url.split("/");
   return {
-    name: '',
+    name: "",
     imageLink: url,
     value: splitUrl[splitUrl.length - 1],
   };
@@ -45,8 +45,8 @@ export const getSurveyJson = (imageUrls: string[], pagesCount = 20) => {
         {
           type: "imagepicker",
           name: `page${i + 1}`,
-          title: questions[i],
-          description: "Please select all that apply.",
+          title: getQuestion(),
+          description: "You can multiple images",
           isRequired: true,
           choices: imageUrls
             .slice(imageIndex, imageIndex + 25)

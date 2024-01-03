@@ -6,6 +6,7 @@ import {
   verifySessionIsValid,
   listLatestSessions,
 } from "../services/db";
+import logger from "../services/logger";
 
 const router = Router();
 //
@@ -16,24 +17,23 @@ router.get("/", (_req: Request, res: Response) => {
 
 router.post("/new/session", async (_req: Request, res: Response) => {
   try {
-
     const latestSession = await listLatestSessions();
-    let newIndex = 1
-    console.log("latestSession", latestSession);
+    let newIndex = 1;
+    logger.info("latestSession", latestSession);
 
     if (latestSession) {
-      if(latestSession[0].index) {
-        newIndex = latestSession[0].index + 1 as number
-      }}
-
-     
+      if (latestSession[0]?.index) {
+        newIndex = (latestSession[0].index + 1) as number;
+      }
+    }
 
     const session = await createSession({
       tableName: process.env.SESSION_TABLE as string,
       sessionData: JSON.stringify({}),
+      demoGraphicsData: JSON.stringify({}),
       // set ttl to 1 hour
       ttl: Math.floor(Date.now() / 1000) + 60 * 60,
-      index: newIndex ?? 1
+      index: newIndex ?? 1,
     });
     return res.status(200).json({
       session: {

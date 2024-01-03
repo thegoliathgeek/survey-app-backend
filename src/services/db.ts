@@ -3,12 +3,16 @@ import {
   GetItemCommand,
   GetItemCommandInput,
   PutItemCommand,
-
-  PutItemInput,
 } from "@aws-sdk/client-dynamodb";
-import { UpdateCommand,ScanCommand, GetCommand, GetCommandInput  } from "@aws-sdk/lib-dynamodb";
+import {
+  UpdateCommand,
+  ScanCommand,
+  GetCommand,
+  GetCommandInput,
+} from "@aws-sdk/lib-dynamodb";
 
 import { v4 as uuid4 } from "uuid";
+import logger from "./logger";
 
 const dbClient = new DynamoDBClient({
   region: "us-east-1",
@@ -20,8 +24,9 @@ interface ITableName {
 
 interface ISession extends ITableName {
   id?: string;
-  sessionData: string;
-  ttl: number;
+  sessionData?: string;
+  demoGraphicsData?: string;
+  ttl?: number;
   index?: number;
 }
 
@@ -33,13 +38,17 @@ interface IImageMapper extends ITableName {
 export const createSession = async (session: ISession) => {
   const now = new Date().toISOString();
   const sessionId = uuid4();
+  if (!session.ttl) {
+    session.ttl = Math.floor(Date.now() / 1000) + 60 * 60;
+  }
   const params = {
     TableName: session.tableName,
     Item: {
       id: { S: sessionId },
-      sessionData: { S: session.sessionData },
+      sessionData: { S: session.sessionData as string },
+      demographicsData: { S: session.demoGraphicsData as string },
       ttl: { N: session.ttl.toString() },
-      index: { N: (session.index ?? 1).toString()},
+      index: { N: (session.index ?? 1).toString() },
       createdAt: { S: now },
       updatedAt: { S: now },
     },
@@ -52,33 +61,45 @@ export const createSession = async (session: ISession) => {
       session: session.Attributes,
     };
   } catch (error) {
-    console.log(error);
+    logger.error("Error in creating session", error);
     return undefined;
   }
 };
 
-export const updateSession = async (session: ISession) => {
+export const updateSession = async (
+  session: ISession,
+  isDemographics = false
+) => {
   const updateCmd = new UpdateCommand({
     TableName: session.tableName,
     Key: {
       id: session.id,
     },
-    UpdateExpression: "SET sessionData = :sessionData, updatedAt = :updatedAt",
-    ExpressionAttributeValues: {
-      ":sessionData": JSON.stringify(
-        session?.sessionData ? session.sessionData : {}
-      ),
-      ":updatedAt": new Date().toISOString(),
-    },
+    UpdateExpression: isDemographics
+      ? "SET demoGraphicsData = :demoGraphicsData, updatedAt = :updatedAt"
+      : "SET sessionData = :sessionData, updatedAt = :updatedAt",
+    ExpressionAttributeValues: isDemographics
+      ? {
+          ":demoGraphicsData": JSON.stringify(
+            session?.demoGraphicsData ? session.demoGraphicsData : {}
+          ),
+          ":updatedAt": new Date().toISOString(),
+        }
+      : {
+          ":sessionData": JSON.stringify(
+            session?.sessionData ? session.sessionData : {}
+          ),
+          ":updatedAt": new Date().toISOString(),
+        },
     ReturnValues: "ALL_NEW",
   });
 
   try {
     const response = await dbClient.send(updateCmd);
-    console.log(response);
+    logger.info(response);
     return response;
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     return undefined;
   }
 };
@@ -97,14 +118,11 @@ export const createImageMapper = async (imageMapper: IImageMapper) => {
     },
   };
 
-
-  
-
   try {
     await dbClient.send(new PutItemCommand(params));
     return true;
   } catch (error) {
-    console.log(error);
+    logger.info(error);
     return false;
   }
 };
@@ -116,10 +134,10 @@ export const listSessions = async () => {
 
   try {
     const response = await dbClient.send(scanCmd);
-    console.log(response);
+    logger.info(response);
     return response.Items;
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     return undefined;
   }
 };
@@ -132,16 +150,16 @@ export const listLatestSessions = async () => {
 
   try {
     const response = await dbClient.send(scanCmd);
-    console.log(response);
+    logger.info(response);
     return response.Items;
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     return undefined;
   }
 };
 
 export const getSession = async (sessionId: string) => {
-  console.log("testing sessionId", sessionId);
+  logger.info("testing sessionId", sessionId);
   const params: GetItemCommandInput = {
     TableName: process.env.SESSION_TABLE as string,
     Key: {
@@ -151,12 +169,12 @@ export const getSession = async (sessionId: string) => {
 
   try {
     const session = await dbClient.send(new GetItemCommand(params));
-    return session ;
+    return session;
   } catch (error) {
-    console.log('error in getting ' ,error);
+    logger.error("error in getting ", error);
     return undefined;
   }
-}
+};
 
 export const verifySessionIsValid = async (sessionId: string) => {
   const params = {
@@ -176,7 +194,7 @@ export const verifySessionIsValid = async (sessionId: string) => {
     }
     return false;
   } catch (error) {
-    console.log(error);
+    logger.error("Error in getting session", error);
     return undefined;
   }
 };
@@ -193,7 +211,7 @@ export const listImageMappers = async (sessionId: string) => {
     const imageMappers = await dbClient.send(new GetItemCommand(params));
     return imageMappers;
   } catch (error) {
-    console.log(error);
+    logger.error("Error in getting image mappers", error);
     return undefined;
   }
 };
