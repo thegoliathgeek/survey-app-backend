@@ -46,7 +46,7 @@ export const getSurveyJson = (imageUrls: string[], pagesCount = 20) => {
           type: "imagepicker",
           name: `page${i + 1}`,
           title: getQuestion(),
-          description: "You can multiple images",
+          description: "You can select multiple images",
           isRequired: true,
           choices: imageUrls
             .slice(imageIndex, imageIndex + 25)
