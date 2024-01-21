@@ -8,6 +8,32 @@ surveyRouter.get("/", (_req, res) => {
   return res.status(200).send(`<h1>Welcome to Survey App</h1>`);
 });
 
+surveyRouter.get("/welcome/terms", (req: Request, res: Response) => {
+  try {
+    const welcomeJson = {
+      title: "Welcome",
+      pages: [
+        {
+          name: "page1",
+          elements: [
+            {
+              type: "html",
+              name: "welcome",
+              html: "<h1>Welcome to the Survey App</h1><h4>By clicking on the button below, you agree to participate in this study.</h4>",
+            },
+          ],
+        },
+      ],
+    };
+    return res.status(200).json(welcomeJson);
+  } catch (err) {
+    return res.status(500).json({
+      error: "Internal Server Error",
+      message: err.message,
+    });
+  }
+});
+
 surveyRouter.get("/json", (req: Request, res: Response) => {
   try {
     //
