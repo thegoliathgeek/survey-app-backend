@@ -31,6 +31,7 @@ export type SurveyJson = {
 }[];
 
 export const getSurveyJson = (imageUrls: string[], pagesCount = 20) => {
+  const IMAGE_COUNT = 20;
   // get title , description and name from db
 
   // loop to create 20 pages for given data
@@ -40,7 +41,7 @@ export const getSurveyJson = (imageUrls: string[], pagesCount = 20) => {
 
   for (let i = 0; i < pagesCount; i++) {
     questionPages.push({
-      name: `page${i}`,
+      name: `page${i + 1}`,
       elements: [
         {
           type: "imagepicker",
@@ -49,7 +50,7 @@ export const getSurveyJson = (imageUrls: string[], pagesCount = 20) => {
           description: "You can select multiple images",
           isRequired: true,
           choices: imageUrls
-            .slice(imageIndex, imageIndex + 25)
+            .slice(imageIndex, imageIndex + IMAGE_COUNT)
             .map((url) => parseImageUrl(url)),
           showLabel: true,
           multiSelect: true,
@@ -58,10 +59,10 @@ export const getSurveyJson = (imageUrls: string[], pagesCount = 20) => {
       ],
     });
 
-    if (imageIndex + 25 > imageUrls.length) {
+    if (imageIndex + IMAGE_COUNT > imageUrls.length) {
       imageIndex = 0;
     } else {
-      imageIndex += 25;
+      imageIndex += IMAGE_COUNT;
     }
   }
 

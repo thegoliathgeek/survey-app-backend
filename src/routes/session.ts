@@ -24,6 +24,9 @@ router.post("/new/session", async (_req: Request, res: Response) => {
     if (latestSession) {
       if (latestSession[0]?.index) {
         newIndex = (latestSession[0].index + 1) as number;
+        if (newIndex > 20) {
+          newIndex = 1;
+        }
       }
     }
 
