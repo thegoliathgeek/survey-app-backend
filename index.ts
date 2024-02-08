@@ -4,6 +4,7 @@ import { Request, Response } from "express";
 import SessionRouter from "./src/routes/session";
 import ImageRouter from "./src/routes/image";
 import cors from "cors";
+import surveyRouter from "./src/routes/survey";
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(
 // Routes
 app.use("/", SessionRouter);
 app.use("/images", ImageRouter);
+app.use("/survey", surveyRouter);
 
 app.use((_req: Request, res: Response) => {
   return res.status(404).json({

@@ -1,8 +1,15 @@
 import { Request, Response, Router } from "express";
 import imageFiles from "../data/filePaths.json";
-import { createImageMapper, verifySessionIsValid , listSessions, listLatestSessions, getSession} from "../services/db";
+import {
+  createImageMapper,
+  verifySessionIsValid,
+  listSessions,
+  listLatestSessions,
+  getSession,
+} from "../services/db";
 import { getSurveyJson } from "../services/survey";
 import { synonyms, antonyms } from "../data/filePathModified";
+import logger from "../services/logger";
 const imageRouter = Router();
 
 imageRouter.get("/", (_req, res) => {
@@ -24,22 +31,22 @@ imageRouter.get("/getImages", async (req: Request, res: Response) => {
 
     const getCurrentSession = await getSession(sessionId as string);
 
-    console.log("getCurrentSession",   getCurrentSession)
+    logger.info("getCurrentSession", getCurrentSession);
 
     // get 250 synonyms and antonyms urls each per survey
     // 1182 synonym urls 1182 / 250 = 4 cycles
     // 707 antonym urls 707 / 250 = 3 cycles
 
     // get the session number from session list query
-    const sessionNumber =  parseInt(getCurrentSession?.Item?.index.N ?? '1')
+    const sessionNumber = parseInt(getCurrentSession?.Item?.index.N ?? "1");
 
-    const synonymSliceStart = (sessionNumber - 1) * 10;
+    const synonymSliceStart = (sessionNumber + 1) * 10;
     const synonymSliceEnd =
-      synonymSliceStart + 250 > 1182 ? 1182 : synonymSliceStart + 250;
+      synonymSliceStart + 250 > 1181 ? 1181 : synonymSliceStart + 250;
 
-    const antonymSliceStart = (sessionNumber - 1) * 10;
+    const antonymSliceStart = (sessionNumber + 1) * 10;
     const antonymSliceEnd =
-      antonymSliceStart + 250 > 707 ? 707 : antonymSliceStart + 250;
+      antonymSliceStart + 250 > 706 ? 706 : antonymSliceStart + 250;
 
     const synonymsUrls =
       synonyms.slice(synonymSliceStart, synonymSliceEnd).length < 250
@@ -77,11 +84,11 @@ imageRouter.get("/getImages", async (req: Request, res: Response) => {
       (image) => process.env.S3_BUCKET_URL + image
     );
 
-    console.log("appendBucketUrls", appendBucketUrls[0]);
+    logger.info("appendBucketUrls", appendBucketUrls[0]);
 
-    appendBucketUrls.sort(() => Math.random() - 0.5)
+    appendBucketUrls.sort(() => Math.random() - 0.5);
 
-    console.log("Lenght of appendBucketUrls", appendBucketUrls.length);
+    logger.info("Lenght of appendBucketUrls", appendBucketUrls.length);
 
     const surveyJson = getSurveyJson(appendBucketUrls, pageCount);
 
