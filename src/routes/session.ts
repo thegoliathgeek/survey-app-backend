@@ -6,7 +6,7 @@ import {
   verifySessionIsValid,
   listLatestSessions,
 } from "../services/db";
-import { format } from "path";
+import logger from "../services/logger";
 
 const router = Router();
 //
@@ -17,24 +17,26 @@ router.get("/", (_req: Request, res: Response) => {
 
 router.post("/new/session", async (_req: Request, res: Response) => {
   try {
-
     const latestSession = await listLatestSessions();
-    let newIndex = 1
-    console.log("latestSession", latestSession);
+    let newIndex = 1;
+    logger.info("latestSession", latestSession);
 
     if (latestSession) {
-      if(latestSession[0].index) {
-        newIndex = latestSession[0].index + 1 as number
-      }}
-
-     
+      if (latestSession[0]?.index) {
+        newIndex = (latestSession[0].index + 1) as number;
+        if (newIndex > 20) {
+          newIndex = 1;
+        }
+      }
+    }
 
     const session = await createSession({
       tableName: process.env.SESSION_TABLE as string,
       sessionData: JSON.stringify({}),
+      demoGraphicsData: JSON.stringify({}),
       // set ttl to 1 hour
       ttl: Math.floor(Date.now() / 1000) + 60 * 60,
-      index: newIndex ?? 1
+      index: newIndex ?? 1,
     });
     return res.status(200).json({
       session: {
@@ -53,12 +55,8 @@ router.post("/new/session", async (_req: Request, res: Response) => {
 router.post("/save-response", async (req: Request, res: Response) => {
   const sessionId = req.headers["session-id"];
 
-  console.log("req.body", req.body)
-  const {response , questionDetails} = await req.body.response;
-
-
-
-
+  console.log("req.body", req.body);
+  const { response, questionDetails } = await req.body.response;
 
   const isValidSession = await verifySessionIsValid(sessionId as string);
   if (!isValidSession) {
@@ -67,35 +65,35 @@ router.post("/save-response", async (req: Request, res: Response) => {
     });
   }
 
+  const formattedResponse: any = [];
 
-  const formattedResponse : any = []
-
-  for(let i = 0 ; i < questionDetails.pages.length ; i++) {
+  for (let i = 0; i < questionDetails.pages.length; i++) {
     const page = questionDetails.pages[i];
     const elements = page.elements;
-  
+
     if (elements && elements[0]) {
       const choices = elements[0].choices;
-  
+
       if (choices) {
         formattedResponse.push({
           images_shown: choices.map((choice) => choice.value),
           image_links: choices.map((choice) => choice.imageLink),
           selected: response[`${elements[0].name}`],
-        })} else {
-          formattedResponse.push({
-            images_shown: [],
-            image_links: [],
-            selected: response[`${elements[0].name}`],
-          })
-         }
-  } else {
-    formattedResponse.push({
-      images_shown: [],
-      image_links: [],
-      selected: response[`${elements[0].name}`],
-    })
-  }
+        });
+      } else {
+        formattedResponse.push({
+          images_shown: [],
+          image_links: [],
+          selected: response[`${elements[0].name}`],
+        });
+      }
+    } else {
+      formattedResponse.push({
+        images_shown: [],
+        image_links: [],
+        selected: response[`${elements[0].name}`],
+      });
+    }
   }
 
   const sessionResponse = await updateSession({
