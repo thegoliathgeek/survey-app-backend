@@ -34,19 +34,19 @@ imageRouter.get("/getImages", async (req: Request, res: Response) => {
     logger.info("getCurrentSession", getCurrentSession);
 
     // get 250 synonyms and antonyms urls each per survey
-    // 1182 synonym urls 1182 / 250 = 4 cycles
-    // 707 antonym urls 707 / 250 = 3 cycles
+    // 1323 synonym urls 1323 / 250 = 5 cycles
+    // 1549 antonym urls 1549 / 250 = 6 cycles
 
     // get the session number from session list query
     const sessionNumber = parseInt(getCurrentSession?.Item?.index.N ?? "1");
 
     const synonymSliceStart = (sessionNumber + 1) * 10;
     const synonymSliceEnd =
-      synonymSliceStart + 250 > 1181 ? 1181 : synonymSliceStart + 250;
+      synonymSliceStart + 250 > 1322 ? 1322 : synonymSliceStart + 250;
 
     const antonymSliceStart = (sessionNumber + 1) * 10;
     const antonymSliceEnd =
-      antonymSliceStart + 250 > 706 ? 706 : antonymSliceStart + 250;
+      antonymSliceStart + 250 > 1548 ? 1548 : antonymSliceStart + 250;
 
     const synonymsUrls =
       synonyms.slice(synonymSliceStart, synonymSliceEnd).length < 250
