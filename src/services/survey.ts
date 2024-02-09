@@ -48,7 +48,7 @@ export const getSurveyJson = (imageUrls: string[], pagesCount = 20) => {
           name: `page${i + 1}`,
           title: getQuestion(),
           description: "You can select multiple images",
-          isRequired: true,
+          isRequired: false,
           choices: imageUrls
             .slice(imageIndex, imageIndex + IMAGE_COUNT)
             .map((url) => parseImageUrl(url)),
